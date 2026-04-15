@@ -704,6 +704,103 @@ const ICONS = {
 
 
 /* ----------------------------------------------------------------
+   PINNED LINKS — Quick access bar
+   Stored in chrome.storage.local under "pinnedLinks" key.
+   Default set ships with the extension; user can add/remove.
+   Data shape:
+   [
+     { label: "GitHub", url: "https://github.com" },
+     ...
+   ]
+   ---------------------------------------------------------------- */
+
+const DEFAULT_PINNED_LINKS = [
+  { label: 'GitHub',    url: 'https://github.com' },
+  { label: 'OpenClaw Docs', url: 'https://docs.example.com' }, // TODO: replace with real URL
+  { label: '火山方舟',   url: 'https://ark.volcengine.com' },
+  { label: '公众号后台', url: 'https://mp.weixin.qq.com' },
+  { label: 'ChatGPT',   url: 'https://chatgpt.com' },
+  { label: 'Claude',    url: 'https://claude.ai' },
+  { label: 'X',         url: 'https://x.com' },
+  { label: 'YouTube',   url: 'https://youtube.com' },
+  { label: 'Notion',    url: 'https://notion.so' },
+  { label: 'Calendar',  url: 'https://calendar.google.com' },
+  { label: 'HN',        url: 'https://news.ycombinator.com' },
+];
+
+/**
+ * getPinnedLinks() — read from storage, fall back to defaults on first use.
+ */
+async function getPinnedLinks() {
+  const { pinnedLinks } = await chrome.storage.local.get('pinnedLinks');
+  if (pinnedLinks && pinnedLinks.length > 0) return pinnedLinks;
+  // First run: seed storage with defaults
+  await chrome.storage.local.set({ pinnedLinks: DEFAULT_PINNED_LINKS });
+  return DEFAULT_PINNED_LINKS;
+}
+
+/**
+ * savePinnedLinks(links) — persist to storage.
+ */
+async function savePinnedLinks(links) {
+  await chrome.storage.local.set({ pinnedLinks: links });
+}
+
+/**
+ * renderPinnedLinks() — paint the pinned bar.
+ */
+async function renderPinnedLinks() {
+  const chipsEl  = document.getElementById('pinnedChips');
+  const addBtn   = document.getElementById('pinnedAddBtn');
+  if (!chipsEl) return;
+
+  const links = await getPinnedLinks();
+
+  chipsEl.innerHTML = links.map(link => {
+    let domain = '';
+    try { domain = new URL(link.url).hostname; } catch {}
+    const faviconUrl = domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=16` : '';
+    const safeUrl    = (link.url || '').replace(/"/g, '&quot;');
+    const safeLabel  = (link.label || '').replace(/"/g, '&quot;');
+    return `<span class="pinned-chip" data-action="open-pinned" data-pinned-url="${safeUrl}">
+      ${faviconUrl ? `<img class="chip-favicon" src="${faviconUrl}" alt="" onerror="this.style.display='none'">` : ''}
+      ${safeLabel}
+      <button class="pinned-remove" data-action="remove-pinned" data-pinned-url="${safeUrl}" title="Unpin">×</button>
+    </span>`;
+  }).join('');
+
+  // Bind the + button (only once)
+  if (addBtn && !addBtn._bound) {
+    addBtn._bound = true;
+    addBtn.addEventListener('click', () => showPinnedAddForm());
+  }
+}
+
+/**
+ * showPinnedAddForm() — replace the + button with inline name+url inputs.
+ */
+function showPinnedAddForm() {
+  const addBtn = document.getElementById('pinnedAddBtn');
+  if (!addBtn) return;
+
+  const form = document.createElement('div');
+  form.className = 'pinned-add-form';
+  form.innerHTML = `
+    <input type="text" id="pinnedInputName" placeholder="Label" style="width:90px">
+    <input type="url"  id="pinnedInputUrl"  placeholder="https://..." style="width:200px">
+    <button class="pinned-save-btn" data-action="save-pinned">Add</button>
+    <button class="pinned-cancel-btn" data-action="cancel-pinned">Cancel</button>
+  `;
+
+  addBtn.style.display = 'none';
+  addBtn.parentNode.insertBefore(form, addBtn);
+
+  // Focus the label input
+  const nameInput = form.querySelector('#pinnedInputName');
+  if (nameInput) nameInput.focus();
+}
+
+/* ----------------------------------------------------------------
    IN-MEMORY STORE FOR OPEN-TAB GROUPS
    ---------------------------------------------------------------- */
 let domainGroups = [];
@@ -1169,6 +1266,7 @@ async function renderStaticDashboard() {
 }
 
 async function renderDashboard() {
+  await renderPinnedLinks();
   await renderStaticDashboard();
 }
 
@@ -1199,6 +1297,69 @@ document.addEventListener('click', async (e) => {
       setTimeout(() => { banner.style.display = 'none'; banner.style.opacity = '1'; }, 400);
     }
     showToast('Closed extra Tab Out tabs');
+    return;
+  }
+
+  // ---- Open a pinned link in a new tab ----
+  if (action === 'open-pinned') {
+    const url = actionEl.dataset.pinnedUrl;
+    if (url) await chrome.tabs.create({ url, active: true });
+    return;
+  }
+
+  // ---- Remove a pinned link ----
+  if (action === 'remove-pinned') {
+    e.stopPropagation();
+    const url = actionEl.dataset.pinnedUrl;
+    if (!url) return;
+    const links = await getPinnedLinks();
+    const filtered = links.filter(l => l.url !== url);
+    await savePinnedLinks(filtered);
+    // Animate out
+    const chip = actionEl.closest('.pinned-chip');
+    if (chip) {
+      chip.style.transition = 'opacity 0.2s, transform 0.2s';
+      chip.style.opacity = '0';
+      chip.style.transform = 'scale(0.8)';
+      setTimeout(() => chip.remove(), 200);
+    }
+    return;
+  }
+
+  // ---- Save a new pinned link from inline form ----
+  if (action === 'save-pinned') {
+    const nameInput = document.getElementById('pinnedInputName');
+    const urlInput  = document.getElementById('pinnedInputUrl');
+    const label = (nameInput?.value || '').trim();
+    let url   = (urlInput?.value  || '').trim();
+
+    if (!label || !url) { showToast('Need both label and URL'); return; }
+
+    // Auto-prefix https://
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+    const links = await getPinnedLinks();
+    // Don't add duplicates
+    if (links.some(l => l.url === url)) { showToast('Already pinned'); return; }
+    links.push({ label, url });
+    await savePinnedLinks(links);
+
+    // Remove form, show + button, re-render
+    const form = document.querySelector('.pinned-add-form');
+    if (form) form.remove();
+    const addBtn = document.getElementById('pinnedAddBtn');
+    if (addBtn) addBtn.style.display = '';
+
+    await renderPinnedLinks();
+    return;
+  }
+
+  // ---- Cancel the add form ----
+  if (action === 'cancel-pinned') {
+    const form = document.querySelector('.pinned-add-form');
+    if (form) form.remove();
+    const addBtn = document.getElementById('pinnedAddBtn');
+    if (addBtn) addBtn.style.display = '';
     return;
   }
 
@@ -1472,6 +1633,20 @@ document.addEventListener('input', async (e) => {
       || '<div style="font-size:12px;color:var(--muted);padding:8px 0">No results</div>';
   } catch (err) {
     console.warn('[tab-out] Archive search failed:', err);
+  }
+});
+
+
+// ---- Pinned add form: Enter to submit, Escape to cancel ----
+document.addEventListener('keydown', (e) => {
+  const form = e.target.closest('.pinned-add-form');
+  if (!form) return;
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    form.querySelector('[data-action="save-pinned"]')?.click();
+  }
+  if (e.key === 'Escape') {
+    form.querySelector('[data-action="cancel-pinned"]')?.click();
   }
 });
 
