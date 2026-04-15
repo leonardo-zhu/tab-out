@@ -1,10 +1,11 @@
 import { OpenTab, DeferredItem, PinnedLink } from '../types';
+import { DEFAULT_PINNED_LINKS } from '../constants';
 
 // ---- Fetch all open tabs ----
 export async function fetchOpenTabs(): Promise<OpenTab[]> {
   try {
     const extensionId = chrome.runtime.id;
-    const newtabUrl = `chrome-extension://${extensionId}/index.html`;
+    const newTabUrl = `chrome-extension://${extensionId}/index.html`;
     const tabs = await chrome.tabs.query({});
     return tabs.map(t => ({
       id: t.id!,
@@ -12,7 +13,7 @@ export async function fetchOpenTabs(): Promise<OpenTab[]> {
       title: t.title || '',
       windowId: t.windowId,
       active: t.active,
-      isTabOut: t.url === newtabUrl || t.url === 'chrome://newtab/',
+      isTabOut: t.url === newTabUrl || t.url === 'chrome://newtab/',
     }));
   } catch {
     return [];
@@ -155,15 +156,6 @@ export async function dismissSavedTab(id: string) {
 }
 
 // ---- Pinned Links ----
-export const DEFAULT_PINNED_LINKS: PinnedLink[] = [
-  { label: 'GitHub', url: 'https://github.com' },
-  { label: 'OpenClaw Docs', url: 'https://docs.openclaw.ai' },
-  { label: '火山方舟', url: 'https://ark.volcengine.com' },
-  { label: '公众号后台', url: 'https://mp.weixin.qq.com' },
-  { label: 'X', url: 'https://x.com' },
-  { label: 'Notion', url: 'https://notion.so' },
-];
-
 export async function getPinnedLinks(): Promise<PinnedLink[]> {
   const { pinnedLinks } = await chrome.storage.local.get('pinnedLinks');
   if (pinnedLinks && pinnedLinks.length > 0) return pinnedLinks;
