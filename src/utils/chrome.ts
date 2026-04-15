@@ -174,3 +174,13 @@ export async function getPinnedLinks(): Promise<PinnedLink[]> {
 export async function savePinnedLinks(links: PinnedLink[]) {
   await chrome.storage.local.set({ pinnedLinks: links });
 }
+
+// ---- Pinned Domain Groups ----
+export async function getPinnedDomains(): Promise<string[]> {
+  const { pinnedDomains } = await chrome.storage.local.get('pinnedDomains');
+  return pinnedDomains || [];
+}
+
+export async function savePinnedDomains(domains: string[]) {
+  await chrome.storage.local.set({ pinnedDomains: domains });
+}

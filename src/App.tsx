@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { OpenTab, DomainGroup, DeferredItem, PinnedLink } from './types';
-import { fetchOpenTabs, getRealTabs, focusTab, closeTabsExact, closeTabsByUrls, closeDuplicateTabs, closeTabOutDupes as apiCloseTabOutDupes, getSavedTabs, saveTabForLater, checkOffSavedTab, dismissSavedTab, getPinnedLinks, savePinnedLinks, DEFAULT_PINNED_LINKS } from './utils/chrome';
+import { fetchOpenTabs, getRealTabs, focusTab, closeTabsExact, closeTabsByUrls, closeDuplicateTabs, closeTabOutDupes as apiCloseTabOutDupes, getSavedTabs, saveTabForLater, checkOffSavedTab, dismissSavedTab, getPinnedLinks, savePinnedLinks, DEFAULT_PINNED_LINKS, getPinnedDomains, savePinnedDomains } from './utils/chrome';
 import { friendlyDomain, stripTitleNoise, cleanTitle, smartTitle, getUserName, getPersonalizedGreeting, getDateDisplay, timeAgo } from './utils/helpers';
 import { playCloseSound, shootConfetti } from './utils/effects';
 import { faviconUrl } from './utils/favicon';
@@ -53,8 +53,8 @@ export default function App() {
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [archiveSearch, setArchiveSearch] = useState('');
   const [closingCards, setClosingCards] = useState<Set<string>>(new Set());
-  const [closingChips, setClosingChips] = useState<Set<string>>(new Set());
   const [userName, setUserName] = useState('');
+  const [pinnedDomains, setPinnedDomains] = useState<string[]>([]);
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -91,10 +91,19 @@ export default function App() {
       groupMap['__landing-pages__'] = { domain: '__landing-pages__', tabs: landingTabs };
     }
 
+    const pinned = await getPinnedDomains();
+    setPinnedDomains(pinned);
+
     const groups = Object.values(groupMap).sort((a, b) => {
       const aL = a.domain === '__landing-pages__';
       const bL = b.domain === '__landing-pages__';
       if (aL !== bL) return aL ? -1 : 1;
+
+      // Pinned domains first
+      const aPinned = pinned.includes(a.domain);
+      const bPinned = pinned.includes(b.domain);
+      if (aPinned !== bPinned) return aPinned ? -1 : 1;
+
       return b.tabs.length - a.tabs.length;
     });
 
@@ -211,6 +220,15 @@ export default function App() {
     loadData();
   };
 
+  const handleTogglePinDomain = async (domain: string) => {
+    const updated = pinnedDomains.includes(domain)
+      ? pinnedDomains.filter(d => d !== domain)
+      : [...pinnedDomains, domain];
+    setPinnedDomains(updated);
+    await savePinnedDomains(updated);
+    loadData();
+  };
+
   // ---- Render ----
   const realTabs = getRealTabs(openTabs);
   const filteredArchive = savedTabs.archived.filter(item =>
@@ -295,7 +313,7 @@ export default function App() {
               </div>
               <div className="missions">
                 {domainGroups.map(group => (
-                  <MissionCard key={group.domain} group={group} closing={closingCards.has(group.domain)} onFocus={handleFocusTab} onCloseSingle={handleCloseSingleTab} onSave={handleSaveForLater} onCloseGroup={g => handleCloseDomainGroup(g, g.domain)} onDedup={handleDedup} />
+                  <MissionCard key={group.domain} group={group} closing={closingCards.has(group.domain)} pinned={pinnedDomains.includes(group.domain)} onFocus={handleFocusTab} onCloseSingle={handleCloseSingleTab} onSave={handleSaveForLater} onCloseGroup={g => handleCloseDomainGroup(g, g.domain)} onDedup={handleDedup} onTogglePin={() => handleTogglePinDomain(group.domain)} />
                 ))}
               </div>
             </>
@@ -396,14 +414,16 @@ export default function App() {
 interface MissionCardProps {
   group: DomainGroup;
   closing: boolean;
+  pinned: boolean;
   onFocus: (url: string) => void;
   onCloseSingle: (url: string, e: React.MouseEvent) => void;
   onSave: (url: string, title: string, e: React.MouseEvent) => void;
   onCloseGroup: (group: DomainGroup) => void;
   onDedup: (dupeUrls: [string, number][]) => void;
+  onTogglePin: () => void;
 }
 
-function MissionCard({ group, closing, onFocus, onCloseSingle, onSave, onCloseGroup, onDedup }: MissionCardProps) {
+function MissionCard({ group, closing, pinned, onFocus, onCloseSingle, onSave, onCloseGroup, onDedup, onTogglePin }: MissionCardProps) {
   const tabs = group.tabs;
   const tabCount = tabs.length;
   const isLanding = group.domain === '__landing-pages__';
@@ -426,13 +446,16 @@ function MissionCard({ group, closing, onFocus, onCloseSingle, onSave, onCloseGr
   const visibleTabs = expanded ? uniqueTabs : uniqueTabs.slice(0, 8);
   const extraCount = uniqueTabs.length - 8;
 
-  const barClass = hasDupes ? 'has-amber-bar' : 'has-neutral-bar';
+  const barClass = pinned ? 'has-active-bar' : hasDupes ? 'has-amber-bar' : 'has-neutral-bar';
 
   return (
     <div className={`mission-card domain-card ${barClass} ${closing ? 'closing' : ''}`}>
       <div className="mission-content">
         <div className="mission-top">
           <span className="mission-name">{isLanding ? 'Homepages' : friendlyDomain(group.domain)}</span>
+          <button className={`mission-pin-btn ${pinned ? 'pinned' : ''}`} onClick={(e) => { e.stopPropagation(); onTogglePin(); }} title={pinned ? 'Unpin' : 'Pin to top'}>
+            📌
+          </button>
           <span className="open-tabs-badge">{ICONS.tabs} {tabCount} tab{tabCount !== 1 ? 's' : ''} open</span>
           {hasDupes && <span className="open-tabs-badge" style={{ color: 'var(--accent-amber)', background: 'rgba(200,113,58,0.08)' }}>{totalExtras} duplicate{totalExtras !== 1 ? 's' : ''}</span>}
         </div>
