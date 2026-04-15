@@ -3,7 +3,10 @@ node_modules/
 *.db
 .DS_Store
 docs/superpowers/
-dist/
+build/
+extension/assets/
+extension/index.html
+*.tsbuildinfo
 
 # Personal config (landing page patterns, etc.) — never push to GitHub
 extension/config.local.js
