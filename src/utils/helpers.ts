@@ -201,10 +201,18 @@ export function getPersonalizedGreeting(userName: string): string {
 }
 
 export function getDateDisplay(): string {
-  return new Date().toLocaleDateString('en-US', {
+  const now = new Date();
+  const date = now.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
+  const time = now.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+  return `${date}  ·  ${time}`;
 }
