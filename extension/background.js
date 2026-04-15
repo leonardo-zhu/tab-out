@@ -87,6 +87,28 @@ chrome.tabs.onUpdated.addListener(() => {
   updateBadge();
 });
 
+// ─── Auto-reload for development ─────────────────────────────────────────────
+
+let currentVersion = null;
+
+async function checkForReload() {
+  try {
+    const resp = await fetch(chrome.runtime.getURL('.version') + '?t=' + Date.now());
+    if (!resp.ok) return;
+    const version = await resp.text();
+    if (currentVersion !== null && version !== currentVersion) {
+      chrome.runtime.reload();
+    }
+    currentVersion = version;
+  } catch {
+    // .version file doesn't exist — not in dev mode, stop polling
+  }
+}
+
+// Check every 2 seconds
+setInterval(checkForReload, 2000);
+checkForReload();
+
 // ─── Initial run ─────────────────────────────────────────────────────────────
 
 // Run once immediately when the service worker first loads

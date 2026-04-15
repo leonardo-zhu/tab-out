@@ -6,6 +6,7 @@ docs/superpowers/
 build/
 extension/assets/
 extension/index.html
+extension/.version
 *.tsbuildinfo
 
 # Personal config (landing page patterns, etc.) — never push to GitHub
