@@ -174,8 +174,9 @@ export function timeAgo(dateStr: string): string {
 
 export function getGreeting(): string {
   const hour = new Date().getHours();
-  const timeStr = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  return timeStr;
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
 }
 
 /**
