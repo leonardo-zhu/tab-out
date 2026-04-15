@@ -184,24 +184,16 @@ header {
   font-weight: 600;
 }
 
-/* ---- Pinned Links Bar ---- */
+/* ---- Pinned Links Section ---- */
+.pinned-section {
+  margin-bottom: 40px;
+}
+
 .pinned-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 32px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--warm-gray);
-}
-
-.pinned-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
-  color: var(--muted);
-  white-space: nowrap;
-  flex-shrink: 0;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .pinned-chips {
