@@ -8,6 +8,7 @@ extension/assets/
 extension/index.html
 extension/.version
 *.tsbuildinfo
+.idea
 
 # Personal config (landing page patterns, etc.) — never push to GitHub
 extension/config.local.js
