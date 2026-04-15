@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { OpenTab, DomainGroup, DeferredItem, PinnedLink } from './types';
 import { fetchOpenTabs, getRealTabs, focusTab, closeTabsExact, closeTabsByUrls, closeDuplicateTabs, closeTabOutDupes as apiCloseTabOutDupes, getSavedTabs, saveTabForLater, checkOffSavedTab, dismissSavedTab, getPinnedLinks, savePinnedLinks, DEFAULT_PINNED_LINKS } from './utils/chrome';
-import { friendlyDomain, stripTitleNoise, cleanTitle, smartTitle, getGreeting, getDateDisplay, timeAgo } from './utils/helpers';
+import { friendlyDomain, stripTitleNoise, cleanTitle, smartTitle, getUserName, getPersonalizedGreeting, getDateDisplay, timeAgo } from './utils/helpers';
 import { playCloseSound, shootConfetti } from './utils/effects';
 import { faviconUrl } from './utils/favicon';
 import './styles.css';
@@ -53,10 +53,16 @@ export default function App() {
   const [archiveSearch, setArchiveSearch] = useState('');
   const [closingCards, setClosingCards] = useState<Set<string>>(new Set());
   const [closingChips, setClosingChips] = useState<Set<string>>(new Set());
+  const [userName, setUserName] = useState('');
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2500);
+  }, []);
+
+  // ---- Fetch user name on mount ----
+  useEffect(() => {
+    getUserName().then(setUserName);
   }, []);
 
   // ---- Load all data ----
@@ -209,7 +215,7 @@ export default function App() {
       {/* Header */}
       <header>
         <div className="header-left">
-          <h1>{getGreeting()}</h1>
+          <h1>{getPersonalizedGreeting(userName)}</h1>
           <div className="date">{getDateDisplay()}</div>
         </div>
       </header>

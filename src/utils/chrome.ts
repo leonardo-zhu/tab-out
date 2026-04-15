@@ -157,16 +157,11 @@ export async function dismissSavedTab(id: string) {
 // ---- Pinned Links ----
 export const DEFAULT_PINNED_LINKS: PinnedLink[] = [
   { label: 'GitHub', url: 'https://github.com' },
-  { label: 'OpenClaw Docs', url: 'https://docs.example.com' },
+  { label: 'OpenClaw Docs', url: 'https://docs.openclaw.ai' },
   { label: '火山方舟', url: 'https://ark.volcengine.com' },
   { label: '公众号后台', url: 'https://mp.weixin.qq.com' },
-  { label: 'ChatGPT', url: 'https://chatgpt.com' },
-  { label: 'Claude', url: 'https://claude.ai' },
   { label: 'X', url: 'https://x.com' },
-  { label: 'YouTube', url: 'https://youtube.com' },
   { label: 'Notion', url: 'https://notion.so' },
-  { label: 'Calendar', url: 'https://calendar.google.com' },
-  { label: 'HN', url: 'https://news.ycombinator.com' },
 ];
 
 export async function getPinnedLinks(): Promise<PinnedLink[]> {
