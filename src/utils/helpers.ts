@@ -174,9 +174,30 @@ export function timeAgo(dateStr: string): string {
 
 export function getGreeting(): string {
   const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+  const timeStr = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  return timeStr;
+}
+
+/**
+ * Fetch user's display name from Chrome identity API.
+ * Extracts the name part from email (before @), capitalized.
+ * Returns empty string if not signed in.
+ */
+export async function getUserName(): Promise<string> {
+  try {
+    const info = await chrome.identity.getProfileUserInfo();
+    if (!info.email) return '';
+    const localPart = info.email.split('@')[0];
+    // Capitalize first letter
+    return localPart.charAt(0).toUpperCase() + localPart.slice(1);
+  } catch {
+    return '';
+  }
+}
+
+export function getPersonalizedGreeting(userName: string): string {
+  const greeting = getGreeting();
+  return userName ? `${greeting}, ${userName}` : greeting;
 }
 
 export function getDateDisplay(): string {
