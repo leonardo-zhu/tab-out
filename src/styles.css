@@ -468,6 +468,31 @@ header {
   letter-spacing: -0.2px;
 }
 
+.mission-pin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  opacity: 0.25;
+  transition: opacity 0.15s, transform 0.15s;
+  filter: grayscale(1);
+}
+
+.mission-pin-btn:hover {
+  opacity: 0.6;
+  transform: scale(1.15);
+}
+
+.mission-pin-btn.pinned {
+  opacity: 1;
+  filter: grayscale(0);
+}
+
 .mission-tag {
   font-size: 10px;
   text-transform: uppercase;
