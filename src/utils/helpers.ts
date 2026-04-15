@@ -1,72 +1,4 @@
-// ---- Friendly domain names ----
-const FRIENDLY_DOMAINS: Record<string, string> = {
-  'github.com': 'GitHub',
-  'www.github.com': 'GitHub',
-  'gist.github.com': 'GitHub Gist',
-  'youtube.com': 'YouTube',
-  'www.youtube.com': 'YouTube',
-  'music.youtube.com': 'YouTube Music',
-  'x.com': 'X',
-  'www.x.com': 'X',
-  'twitter.com': 'X',
-  'www.twitter.com': 'X',
-  'reddit.com': 'Reddit',
-  'www.reddit.com': 'Reddit',
-  'old.reddit.com': 'Reddit',
-  'substack.com': 'Substack',
-  'www.substack.com': 'Substack',
-  'medium.com': 'Medium',
-  'www.medium.com': 'Medium',
-  'linkedin.com': 'LinkedIn',
-  'www.linkedin.com': 'LinkedIn',
-  'stackoverflow.com': 'Stack Overflow',
-  'www.stackoverflow.com': 'Stack Overflow',
-  'news.ycombinator.com': 'Hacker News',
-  'google.com': 'Google',
-  'www.google.com': 'Google',
-  'mail.google.com': 'Gmail',
-  'docs.google.com': 'Google Docs',
-  'drive.google.com': 'Google Drive',
-  'calendar.google.com': 'Google Calendar',
-  'meet.google.com': 'Google Meet',
-  'gemini.google.com': 'Gemini',
-  'chatgpt.com': 'ChatGPT',
-  'www.chatgpt.com': 'ChatGPT',
-  'chat.openai.com': 'ChatGPT',
-  'claude.ai': 'Claude',
-  'www.claude.ai': 'Claude',
-  'code.claude.com': 'Claude Code',
-  'notion.so': 'Notion',
-  'www.notion.so': 'Notion',
-  'figma.com': 'Figma',
-  'www.figma.com': 'Figma',
-  'slack.com': 'Slack',
-  'app.slack.com': 'Slack',
-  'discord.com': 'Discord',
-  'www.discord.com': 'Discord',
-  'wikipedia.org': 'Wikipedia',
-  'en.wikipedia.org': 'Wikipedia',
-  'amazon.com': 'Amazon',
-  'www.amazon.com': 'Amazon',
-  'netflix.com': 'Netflix',
-  'www.netflix.com': 'Netflix',
-  'spotify.com': 'Spotify',
-  'open.spotify.com': 'Spotify',
-  'vercel.com': 'Vercel',
-  'www.vercel.com': 'Vercel',
-  'npmjs.com': 'npm',
-  'www.npmjs.com': 'npm',
-  'developer.mozilla.org': 'MDN',
-  'arxiv.org': 'arXiv',
-  'www.arxiv.org': 'arXiv',
-  'huggingface.co': 'Hugging Face',
-  'www.huggingface.co': 'Hugging Face',
-  'producthunt.com': 'Product Hunt',
-  'www.producthunt.com': 'Product Hunt',
-  'xiaohongshu.com': 'RedNote',
-  'www.xiaohongshu.com': 'RedNote',
-  'local-files': 'Local Files',
-};
+import { FRIENDLY_DOMAINS, LANDING_PAGE_PATTERNS } from '../constants';
 
 function capitalize(str: string): string {
   if (!str) return '';
@@ -172,12 +104,23 @@ export function timeAgo(dateStr: string): string {
   return diffDays + ' days ago';
 }
 
-export function getGreeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return 'Good morning';
-  if (hour < 17) return 'Good afternoon';
-  return 'Good evening';
+export function getGreeting(userName?: string): string {
+  const now = new Date();
+  const hour = now.getHours();
+  const min = now.getMinutes();
+
+  let greeting = 'Good evening';
+  if ((hour === 23 && min >= 30) || (hour >= 0 && hour < 5)) {
+    greeting = "It's late, get some rest";
+  } else if (hour < 12) {
+    greeting = 'Good morning';
+  } else if (hour < 18) {
+    greeting = 'Good afternoon';
+  }
+
+  return userName ? `${greeting}, ${userName}` : greeting;
 }
+
 
 /**
  * Fetch user's display name from Chrome identity API.
@@ -196,11 +139,6 @@ export async function getUserName(): Promise<string> {
   }
 }
 
-export function getPersonalizedGreeting(userName: string): string {
-  const greeting = getGreeting();
-  return userName ? `${greeting}, ${userName}` : greeting;
-}
-
 export function getDateDisplay(): string {
   const now = new Date();
   const date = now.toLocaleDateString('en-US', {
@@ -216,4 +154,16 @@ export function getDateDisplay(): string {
     hour12: false,
   });
   return `${date}  ·  ${time}`;
+}
+
+export function isLandingPage(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return LANDING_PAGE_PATTERNS.some(p => {
+      if (parsed.hostname !== p.hostname) return false;
+      if (p.test) return p.test(parsed.pathname, url);
+      if (p.pathExact) return p.pathExact.includes(parsed.pathname);
+      return parsed.pathname === '/';
+    });
+  } catch { return false; }
 }
