@@ -361,7 +361,7 @@ export default function App() {
           </div>
         </div>
         <div className="last-refresh">
-          <span style={{ color: 'var(--muted)', fontSize: 11 }}>Tab Out by Zara</span>
+          <span style={{ color: 'var(--muted)', fontSize: 11 }}>Tab Out by Leonardo</span>
         </div>
       </footer>
 
