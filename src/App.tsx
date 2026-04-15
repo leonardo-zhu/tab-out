@@ -54,10 +54,17 @@ export default function App() {
   const [closingCards, setClosingCards] = useState<Set<string>>(new Set());
   const [closingChips, setClosingChips] = useState<Set<string>>(new Set());
   const [userName, setUserName] = useState('');
+  const [dateTime, setDateTime] = useState(getDateDisplay());
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2500);
+  }, []);
+
+  // ---- Live clock ----
+  useEffect(() => {
+    const timer = setInterval(() => setDateTime(getDateDisplay()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   // ---- Fetch user name on mount ----
@@ -216,7 +223,7 @@ export default function App() {
       <header>
         <div className="header-left">
           <h1>{getPersonalizedGreeting(userName)}</h1>
-          <div className="date">{getDateDisplay()}</div>
+          <div className="date">{dateTime}</div>
         </div>
       </header>
 
