@@ -4,6 +4,7 @@ import { fetchOpenTabs, getRealTabs, focusTab, closeTabsExact, closeTabsByUrls, 
 import { friendlyDomain, stripTitleNoise, cleanTitle, smartTitle, getUserName, getPersonalizedGreeting, getDateDisplay, timeAgo } from './utils/helpers';
 import { playCloseSound, shootConfetti } from './utils/effects';
 import { faviconUrl } from './utils/favicon';
+import { Clock } from './components/Clock';
 import './styles.css';
 
 // ---- Landing page patterns ----
@@ -54,17 +55,10 @@ export default function App() {
   const [closingCards, setClosingCards] = useState<Set<string>>(new Set());
   const [closingChips, setClosingChips] = useState<Set<string>>(new Set());
   const [userName, setUserName] = useState('');
-  const [dateTime, setDateTime] = useState(getDateDisplay());
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2500);
-  }, []);
-
-  // ---- Live clock ----
-  useEffect(() => {
-    const timer = setInterval(() => setDateTime(getDateDisplay()), 1000);
-    return () => clearInterval(timer);
   }, []);
 
   // ---- Fetch user name on mount ----
@@ -147,6 +141,12 @@ export default function App() {
     setAddUrl('');
   };
 
+  const handleResetPinned = async () => {
+    setPinnedLinks(DEFAULT_PINNED_LINKS);
+    await savePinnedLinks(DEFAULT_PINNED_LINKS);
+    showToast('Pinned links reset to defaults');
+  };
+
   const handleFocusTab = (url: string) => focusTab(url);
 
   const handleCloseSingleTab = async (url: string, e: React.MouseEvent) => {
@@ -223,7 +223,7 @@ export default function App() {
       <header>
         <div className="header-left">
           <h1>{getPersonalizedGreeting(userName)}</h1>
-          <div className="date">{dateTime}</div>
+          <Clock />
         </div>
       </header>
 
@@ -262,7 +262,10 @@ export default function App() {
             })}
           </div>
           {!showAddForm ? (
-            <button className="pinned-add-btn" onClick={() => setShowAddForm(true)}>+</button>
+            <>
+              <button className="pinned-reset-btn" onClick={handleResetPinned} title="Reset to defaults">↺</button>
+              <button className="pinned-add-btn" onClick={() => setShowAddForm(true)}>+</button>
+            </>
           ) : (
             <div className="pinned-add-form">
               <input type="text" placeholder="Label" style={{ width: 90 }} value={addLabel} onChange={e => setAddLabel(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleAddPinned(); if (e.key === 'Escape') setShowAddForm(false); }} autoFocus />
