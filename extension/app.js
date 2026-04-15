@@ -752,9 +752,17 @@ async function savePinnedLinks(links) {
 async function renderPinnedLinks() {
   const chipsEl  = document.getElementById('pinnedChips');
   const addBtn   = document.getElementById('pinnedAddBtn');
+  const countEl  = document.getElementById('pinnedCount');
+  const section  = document.getElementById('pinnedSection');
   if (!chipsEl) return;
 
   const links = await getPinnedLinks();
+
+  // Update count in section header
+  if (countEl) countEl.textContent = `${links.length} link${links.length !== 1 ? 's' : ''}`;
+
+  // Hide section if empty (user can still add via +)
+  if (section) section.style.display = links.length > 0 ? 'block' : 'none';
 
   chipsEl.innerHTML = links.map(link => {
     let domain = '';
