@@ -78,7 +78,6 @@ header {
   color: var(--muted);
   font-weight: 400;
   letter-spacing: 0.5px;
-  text-transform: uppercase;
 }
 
 /* ---- Tab cleanup banner ---- */
@@ -278,6 +277,28 @@ header {
   border-color: var(--accent-amber);
   color: var(--accent-amber);
   background: rgba(200, 113, 58, 0.04);
+}
+
+.pinned-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px dashed var(--warm-gray);
+  background: transparent;
+  color: var(--muted);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.pinned-reset-btn:hover {
+  border-color: var(--accent-rose);
+  color: var(--accent-rose);
+  background: rgba(179, 90, 90, 0.04);
 }
 
 /* Inline add form */

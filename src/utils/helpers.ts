@@ -206,7 +206,7 @@ export function getDateDisplay(): string {
   const date = now.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
   });
   const time = now.toLocaleTimeString('en-US', {
