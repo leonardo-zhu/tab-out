@@ -263,8 +263,8 @@ export default function App() {
           </div>
           {!showAddForm ? (
             <>
-              <button className="pinned-reset-btn" onClick={handleResetPinned} title="Reset to defaults">↺</button>
               <button className="pinned-add-btn" onClick={() => setShowAddForm(true)}>+</button>
+              <button className="pinned-reset-btn" onClick={() => { if (confirm('Reset all pinned links to defaults?')) handleResetPinned(); }} title="Reset to defaults">↺</button>
             </>
           ) : (
             <div className="pinned-add-form">
