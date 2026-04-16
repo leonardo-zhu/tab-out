@@ -1,4 +1,4 @@
-import { ICONS } from './Icons';
+import { ICONS } from '../constants';
 
 interface ToastProps {
   message: string;

@@ -89,4 +89,4 @@ export const DEFAULT_PINNED_LINKS: PinnedLink[] = [
   { label: 'Notion', url: 'https://notion.so' },
 ];
 
-export { ICONS } from '../components/Icons';
+export { ICONS } from './Icons';

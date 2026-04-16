@@ -33,6 +33,8 @@ export default function App() {
 
   const realTabs = getRealTabs(openTabs);
 
+  const showSidebar = savedTabs.active.length > 0 || savedTabs.archived.length > 0;
+
   return (
     <div className="container">
       <Greeting />
@@ -41,8 +43,8 @@ export default function App() {
 
       <PinnedSection pinnedLinks={pinnedLinks} updatePinnedLinks={updatePinnedLinks} showToast={showToast} />
 
-      <div className="dashboard-columns" style={{ display: 'flex', gap: 32 }}>
-        <div className="active-section" style={{ flex: 1, minWidth: 0 }}>
+      <div className={showSidebar ? "dashboard-columns" : ""} style={showSidebar ? { display: 'flex', gap: 32 } : {}}>
+        <div className="active-section" style={showSidebar ? { flex: 1, minWidth: 0 } : {}}>
           {domainGroups.length > 0 ? (
             <>
               <div className="section-header">
@@ -70,7 +72,7 @@ export default function App() {
           )}
         </div>
 
-        <SavedForLater active={savedTabs.active} archived={savedTabs.archived} loadData={loadData} showToast={showToast} />
+        {showSidebar && <SavedForLater active={savedTabs.active} archived={savedTabs.archived} loadData={loadData} showToast={showToast} />}
       </div>
 
       <footer>

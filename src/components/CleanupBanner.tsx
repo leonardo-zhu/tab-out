@@ -1,4 +1,4 @@
-import { ICONS } from './Icons.tsx';
+import { ICONS } from '../constants';
 import { closeTabOutDupes as apiCloseTabOutDupes } from '../utils/chrome';
 import { playCloseSound } from '../utils/effects';
 
