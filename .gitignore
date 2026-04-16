@@ -4,9 +4,6 @@ node_modules/
 .DS_Store
 docs/superpowers/
 build/
-extension/assets/
-extension/index.html
-extension/.version
 *.tsbuildinfo
 .idea
 
