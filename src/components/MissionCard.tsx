@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DomainGroup, OpenTab } from '../types';
-import { ICONS } from './Icons.tsx';
+import { ICONS } from '../constants';
 import { friendlyDomain, cleanTitle, smartTitle, stripTitleNoise } from '../utils/helpers';
 import { faviconUrl } from '../utils/favicon';
 import { focusTab, closeTabsExact, closeTabsByUrls, closeDuplicateTabs, saveTabForLater } from '../utils/chrome';
@@ -17,14 +17,14 @@ interface MissionCardProps {
 }
 
 export function MissionCard({
-                              group,
-                              closing: closingProp,
-                              pinned,
-                              loadData,
-                              showToast,
-                              updatePinnedDomains,
-                              pinnedDomains
-                            }: MissionCardProps) {
+  group,
+  closing: closingProp,
+  pinned,
+  loadData,
+  showToast,
+  updatePinnedDomains,
+  pinnedDomains
+}: MissionCardProps) {
   const [isClosing, setIsClosing] = useState(false);
   const tabs = group.tabs;
   const tabCount = tabs.length;

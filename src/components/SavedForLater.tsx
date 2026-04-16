@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { DeferredItem } from '../types';
-import { ICONS } from './Icons.tsx';
+import { ICONS } from '../constants';
 import { faviconUrl } from '../utils/favicon';
 import { timeAgo } from '../utils/helpers';
 import { checkOffSavedTab, dismissSavedTab } from '../utils/chrome';
@@ -27,9 +27,8 @@ export function SavedForLater({ active, archived, loadData, showToast }: SavedFo
     loadData();
   };
 
-  const filteredArchive = useMemo(() => {
-    const searchTarget = (archiveSearch || '').toLowerCase();
-    return archived.filter(item => {
+  const searchTarget = (archiveSearch || '').toLowerCase();
+  const filteredArchive =  archived.filter(item => {
       if (!searchTarget) return true;
 
       const titleMatch = (item.title || '').toLowerCase().includes(searchTarget);
@@ -37,9 +36,6 @@ export function SavedForLater({ active, archived, loadData, showToast }: SavedFo
 
       return titleMatch || urlMatch;
     });
-  }, [archiveSearch])
-
-  if (active.length === 0 && archived.length === 0) return null;
 
   return (
     <div className="deferred-column" style={{ width: 300, flexShrink: 0 }}>
