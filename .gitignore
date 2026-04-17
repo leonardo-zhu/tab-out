@@ -9,3 +9,8 @@ build/
 
 # Personal config (landing page patterns, etc.) — never push to GitHub
 extension/config.local.js
+
+# Build outputs (Vite generates these)
+extension/assets/
+extension/index.html
+extension/.version

@@ -8,15 +8,24 @@ No server. No account. No external API calls. Just a Chrome extension.
 
 ---
 
-## Install with a coding agent
+## Install
 
-Send your coding agent (Claude Code, Codex, etc.) this repo and say **"install this"**:
+### From Releases (recommended)
 
+1. Go to [Releases](https://github.com/leonardo-zhu/tab-out/releases)
+2. Download the latest `tab-out.zip`
+3. Open Chrome → `chrome://extensions` → Enable **Developer mode** → **Load unpacked** → Select the extracted folder
+
+### Build from source
+
+```bash
+git clone https://github.com/leonardo-zhu/tab-out.git
+cd tab-out
+pnpm install
+pnpm run build
 ```
-https://github.com/zarazhangrui/tab-out
-```
 
-The agent will walk you through it. Takes about 1 minute.
+Then load the `extension/` folder in `chrome://extensions`.
 
 ---
 
@@ -31,28 +40,6 @@ The agent will walk you through it. Takes about 1 minute.
 - **Localhost grouping** shows port numbers next to each tab so you can tell your vibe coding projects apart
 - **Expandable groups** show the first 8 tabs with a clickable "+N more"
 - **100% local** your data never leaves your machine
-- **Pure Chrome extension** no server, no Node.js, no npm, no setup beyond loading the extension
-
----
-
-## Manual Setup
-
-**1. Clone the repo**
-
-```bash
-git clone https://github.com/zarazhangrui/tab-out.git
-```
-
-**2. Load the Chrome extension**
-
-1. Open Chrome and go to `chrome://extensions`
-2. Enable **Developer mode** (top-right toggle)
-3. Click **Load unpacked**
-4. Navigate to the `extension/` folder inside the cloned repo and select it
-
-**3. Open a new tab**
-
-You'll see Tab Out.
 
 ---
 
@@ -76,6 +63,7 @@ Everything runs inside the Chrome extension. No external server, no API calls, n
 | What | How |
 |------|-----|
 | Extension | Chrome Manifest V3 |
+| Build | Vite + React + TypeScript |
 | Storage | chrome.storage.local |
 | Sound | Web Audio API (synthesized, no files) |
 | Animations | CSS transitions + JS confetti particles |
@@ -88,4 +76,4 @@ MIT
 
 ---
 
-Built by [Zara](https://x.com/zarazhangrui)
+Built by [Leonardo](https://leonardo-zhu.me)
