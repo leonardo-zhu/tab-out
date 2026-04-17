@@ -27,6 +27,14 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
+
+      - name: Set version
+        id: version
+        run: |
+          VERSION="1.0.0.${{ github.run_number }}"
+          jq --arg v "$VERSION" '.version = $v' extension/manifest.json > tmp && mv tmp extension/manifest.json
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - run: pnpm build
 
       - name: Zip extension
@@ -36,7 +44,17 @@ jobs:
         if: github.event_name == 'push'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}
-          name: Build #${{ github.run_number }}
+          tag_name: "v${{ steps.version.outputs.version }}"
+          name: "Build #${{ github.run_number }} — v${{ steps.version.outputs.version }}"
           files: tab-out.zip
           generate_release_notes: true
+
+      - name: Commit version back
+        if: github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add extension/manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m ":bookmark: chore(release): bump version to ${{ steps.version.outputs.version }} [skip ci]"
+          git push
